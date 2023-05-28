@@ -32,3 +32,26 @@ void ATantrumnCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 }
 
+void ATantrumnCharacterBase::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+
+	APlayerController* PlayerController = GetController<APlayerController>();
+
+	if (PlayerController)
+	{
+		const float fallImpactSpeed = FMath::Abs(GetVelocity().Z);
+		if (fallImpactSpeed < MinImpactSpeed)
+		{
+			return;
+		}
+
+		const float DeltaImpact = MaxImpactSpeed - MinImpactSpeed;
+		const float FallRatio = FMath::Clamp((fallImpactSpeed - MinImpactSpeed) / DeltaImpact, 0.0f, 1.0f);
+		const bool bAffectSmall = FallRatio <= 0.5f;
+		const bool bAffectLarge = FallRatio > 0.5f;
+
+		PlayerController->PlayDynamicForceFeedback(FallRatio, 2.5f, bAffectLarge, bAffectSmall, bAffectLarge, bAffectSmall);
+	}
+}
+
